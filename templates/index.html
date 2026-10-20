@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LangGraph Refund Agent - Professional Dashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS linked from static folder -->
+    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Header Navigation -->
+    <header class="bg-slate-900 text-white shadow-md border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="bg-indigo-600 p-2.5 rounded-xl text-white shadow-inner flex items-center justify-center">
+                    <i class="fa-solid fa-shield-halved text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight">LangGraph Refund Agent</h1>
+                    <p class="text-xs text-slate-400">Automated Customer Support & Human-in-the-Loop Review Dashboard</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-4 bg-slate-800/80 px-4 py-2 rounded-lg border border-slate-700/60">
+                <div class="flex items-center space-x-2">
+                    <span id="connection-indicator" class="w-2.5 h-2.5 rounded-full bg-emerald-500 pulse-dot"></span>
+                    <span id="connection-status" class="text-xs font-medium text-slate-300">FastAPI Connected</span>
+                </div>
+                <div class="h-4 w-px bg-slate-700"></div>
+                <div class="flex items-center space-x-2">
+                    <span class="text-xs text-slate-400">API Base:</span>
+                    <input type="text" id="api-base-url" value="http://localhost:8000" class="bg-slate-900 text-slate-200 text-xs px-2 py-1 rounded border border-slate-700 focus:outline-none focus:border-indigo-500 w-36">
+                    <button onclick="testConnection()" class="bg-slate-700 hover:bg-slate-600 text-xs px-2.5 py-1 rounded transition text-slate-200">Test</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Left Column: Support Request & Human Review Queue -->
+        <div class="lg:col-span-6 space-y-6">
+            
+            <!-- Card 1: Submit Support Request -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-headset text-indigo-600"></i> New Support Request
+                    </h2>
+                    <span class="text-xs bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-full font-medium">POST /support</span>
+                </div>
+                <p class="text-xs text-slate-500 mb-4">Simulate a customer inquiry triggering the LangGraph agent workflow.</p>
+                
+                <form id="support-form" onsubmit="submitSupportRequest(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Thread ID</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="support-thread-id" required placeholder="e.g. thread-user-101" 
+                                   class="flex-1 bg-slate-50 border border-slate-300 rounded-lg px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+                            <button type="button" onclick="generateRandomThread()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium px-3.5 py-2 rounded-lg border border-slate-300 transition">
+                                <i class="fa-solid fa-shuffle mr-1"></i> Random
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600">Customer Message</label>
+                            <span class="text-[11px] text-slate-400">Presets available below</span>
+                        </div>
+                        <textarea id="support-message" rows="3" required placeholder="I would like a refund for order ORD-1001..."
+                                  class="w-full bg-slate-50 border border-slate-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"></textarea>
+                    </div>
+
+                    <!-- Quick Preset Buttons -->
+                    <div class="flex flex-wrap gap-2 pt-1">
+                        <button type="button" onclick="setPreset('broken')" class="text-xs bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 px-3 py-1.5 rounded-lg border border-slate-200 transition font-medium">
+                            <i class="fa-solid fa-triangle-exclamation mr-1 text-amber-500"></i> Broken Item Refund
+                        </button>
+                        <button type="button" onclick="setPreset('late')" class="text-xs bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 px-3 py-1.5 rounded-lg border border-slate-200 transition font-medium">
+                            <i class="fa-solid fa-clock mr-1 text-blue-500"></i> Late Delivery
+                        </button>
+                        <button type="button" onclick="setPreset('general')" class="text-xs bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 px-3 py-1.5 rounded-lg border border-slate-200 transition font-medium">
+                            <i class="fa-solid fa-circle-question mr-1 text-slate-500"></i> Order Status Query
+                        </button>
+                    </div>
+
+                    <button type="submit" id="submit-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-4 rounded-lg transition flex items-center justify-center gap-2 shadow-sm text-sm">
+                        <i class="fa-solid fa-paper-plane"></i> Send to Support Agent
+                    </button>
+                </form>
+            </div>
+
+            <!-- Card 2: Human Review Queue -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-user-check text-amber-600"></i> Human Review Queue
+                    </h2>
+                    <span class="text-xs bg-amber-50 text-amber-700 px-2.5 py-1 rounded-full font-medium">POST /review/{thread_id}</span>
+                </div>
+                <p class="text-xs text-slate-500 mb-4">Review suspended threads waiting for manager authorization to approve or reject refunds[cite: 1].</p>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Target Thread ID</label>
+                        <input type="text" id="review-thread-id" placeholder="Enter thread ID awaiting review..." 
+                               class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white transition">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 pt-2">
+                        <button onclick="submitReview(true)" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 px-4 rounded-lg transition flex items-center justify-center gap-2 shadow-sm text-sm">
+                            <i class="fa-solid fa-check"></i> Approve Refund
+                        </button>
+                        <button onclick="submitReview(false)" class="bg-rose-600 hover:bg-rose-700 text-white font-medium py-2.5 px-4 rounded-lg transition flex items-center justify-center gap-2 shadow-sm text-sm">
+                            <i class="fa-solid fa-xmark"></i> Reject Refund
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Column: Live Output / Execution Log & State Inspector -->
+        <div class="lg:col-span-6 flex flex-col space-y-6">
+            
+            <div class="bg-slate-900 text-slate-100 rounded-2xl shadow-sm border border-slate-800 p-6 flex-1 flex flex-col">
+                <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
+                    <h2 class="text-sm font-semibold tracking-wide flex items-center gap-2">
+                        <i class="fa-solid fa-terminal text-indigo-400"></i> Agent Execution Log & Output
+                    </h2>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="clearLogs()" class="text-xs text-slate-400 hover:text-white transition px-2 py-1 bg-slate-800 rounded border border-slate-700">Clear</button>
+                    </div>
+                </div>
+
+                <!-- Status Banner Widget -->
+                <div id="status-banner" class="hidden mb-4 p-3 rounded-lg border text-xs flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <i id="banner-icon" class="fa-solid fa-info-circle text-base"></i>
+                        <div>
+                            <span class="font-semibold block" id="banner-title">Status</span>
+                            <span id="banner-desc" class="text-slate-300">Description here...</span>
+                        </div>
+                    </div>
+                    <span id="banner-status-badge" class="px-2 py-0.5 rounded font-mono text-[10px] uppercase"></span>
+                </div>
+
+                <!-- JSON Response Viewport -->
+                <div class="relative flex-1 bg-slate-950 rounded-xl border border-slate-800 p-4 font-mono text-xs overflow-hidden flex flex-col min-h-[360px]">
+                    <div class="flex justify-between items-center pb-2 mb-2 border-b border-slate-800/80 text-slate-500 text-[11px]">
+                        <span>FORMATTED RESULT PAYLOAD</span>
+                        <span id="response-timestamp">Ready</span>
+                    </div>
+                    <pre id="output-pre" class="flex-1 overflow-auto text-emerald-400 whitespace-pre-wrap break-all">// Submit a request or run an action to view graph state output...</pre>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 mt-auto py-4">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500">
+            LangGraph Refund Agent Dashboard &bull; FastAPI Backend Integration
+        </div>
+    </footer>
+
+    <!-- JavaScript linked from static folder -->
+    <script src="{{ url_for('static', path='script.js') }}"></script>
+</body>
+</html>
